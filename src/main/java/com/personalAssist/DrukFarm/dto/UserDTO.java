@@ -10,8 +10,7 @@ import com.personalAssist.DrukFarm.Model.Role;
 public class UserDTO {
 
 	private Long id;
-	private String firstName;
-	private String lastName;
+	private String userName;
 	private String email;
 	private String phone;
 	private String password;
@@ -19,7 +18,6 @@ public class UserDTO {
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private List<String> roles;
-	private Set<Role> userRoles;
 	private List<String> userServices = new ArrayList<>();
 
 	public UserDTO() {
@@ -30,26 +28,21 @@ public class UserDTO {
 		return password;
 	}
 
-	public UserDTO(Long id, String firstName, String lastName, String email, String phone, String password,
-			List<String> roles) {
+	public UserDTO(Long id, String userName, String email, String phone, String password, List<String> roles) {
 		super();
 		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.userName = userName;
 		this.email = email;
 		this.phone = phone;
 		this.password = password;
-		this.roles = roles;
 	}
 
-	public UserDTO(Long id, String firstName, String lastName, String email, String phone, Set<Role> userRoles) {
+	public UserDTO(Long id, String userName, String email, String phone, Set<Role> userRoles) {
 		super();
 		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.userName = userName;
 		this.email = email;
 		this.phone = phone;
-		this.roles = roles;
 	}
 
 	public List<String> getRoles() {
@@ -67,7 +60,6 @@ public class UserDTO {
 	public Long getId() {
 		return id;
 	}
-	
 
 	public List<String> getUserServices() {
 		return userServices;
@@ -81,20 +73,12 @@ public class UserDTO {
 		this.id = id;
 	}
 
-	public String getFirstName() {
-		return firstName;
+	public String getUserName() {
+		return userName;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 	public String getEmail() {
@@ -136,6 +120,5 @@ public class UserDTO {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
-	
 
 }

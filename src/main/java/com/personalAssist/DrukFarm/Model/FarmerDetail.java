@@ -19,15 +19,16 @@ public class FarmerDetail {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-
-	@OneToOne
-	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
 	
 	private String farmName;
 	private String farmSize;
 	private String harvestSeason;
 	private Boolean transportRequired;
+	private String farmLocation;
+	
+	@OneToOne
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 	
     @OneToMany(mappedBy = "farmerDetail", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Produce> availableProduce;
@@ -91,6 +92,16 @@ public class FarmerDetail {
 	public void setAvailableProduce(List<Produce> availableProduce) {
 		this.availableProduce = availableProduce;
 	}
+
+	public String getFarmLocation() {
+		return farmLocation;
+	}
+
+	public void setFarmLocation(String farmLocation) {
+		this.farmLocation = farmLocation;
+	}
+	
+	
 	
 	
 }

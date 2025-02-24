@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtFilter implements Filter {
 
 	private static final String[] AUTH_WHITELIST = { "/auth/login", // Login endpoint
-			"/api/registration", "/api/addServices", "/api/getServices" // Registration endpoint
+			"/api/registration", "/api/addServices", "/uploads/", "/images/" // Registration endpoint
 	};
 
 	@Override
@@ -52,7 +52,7 @@ public class JwtFilter implements Filter {
 
 	private boolean isPathInWhitelist(String path) {
 		for (String whitelistedPath : AUTH_WHITELIST) {
-			if (path.equals(whitelistedPath)) {
+			if (path.startsWith(whitelistedPath)) {
 				return true;
 			}
 		}

@@ -5,7 +5,7 @@ import java.util.List;
 import com.personalAssist.DrukFarm.Model.FarmerDetail;
 import com.personalAssist.DrukFarm.Model.TransporterDetail;
 
-public class ServiceRequestDTO {
+public class DetailsRequestDTO {
 
 	private String email;
 	private List<String> services;
@@ -14,7 +14,7 @@ public class ServiceRequestDTO {
 	private FarmerDetailDTO farmerDetail;
 	private ProduceDTO produce;
 
-	public ServiceRequestDTO() {
+	public DetailsRequestDTO() {
 		super();
 	}
 

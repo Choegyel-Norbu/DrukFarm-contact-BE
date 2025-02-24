@@ -24,8 +24,8 @@ import com.personalAssist.DrukFarm.service.TwilioService;
 import com.personalAssist.DrukFarm.service.UserService;
 import com.personalAssist.DrukFarm.util.JwtUtil;
 import com.personalAssist.DrukFarm.util.PasswordEncoder;
-import com.personalAssist.DrukFarm.util.UserWrapper;
 import com.personalAssist.DrukFarm.wrapper.LoginApiResponse;
+import com.personalAssist.DrukFarm.wrapper.UserWrapper;
 
 @RestController
 @RequestMapping("/auth")
@@ -69,7 +69,7 @@ public class AuthController {
 		if (channel.equalsIgnoreCase("emial")) {
 			userService.sendEmailOTP(recipient, otp);
 		} else {
-			twilioService.sendOTP(recipient, otp);
+//			twilioService.sendOTP(recipient, otp);
 		}
 
 		Map<String, String> response = new HashMap<>();

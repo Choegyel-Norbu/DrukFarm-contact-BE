@@ -32,10 +32,7 @@ public class User {
 	private Long id;
 
 	@Column(nullable = false)
-	private String firstName;
-
-	@Column(nullable = false)
-	private String lastName;
+	private String userName;
 	
 	@Column(nullable = false, unique = true)
 	private String email;
@@ -71,9 +68,15 @@ public class User {
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private BuyerDetail buyerDetail;
+	
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+	private FarmerDetail farmerDetail;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private TransporterDetail transporterDetail;
+	
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private DP profileImage;
 
 	public List<UserServiceModal> getUserServices() {
 		return userServices;
@@ -95,10 +98,9 @@ public class User {
 		this.roles = roles;
 	}
 
-	public User(String firstName, String lastName, String email, String phone, Set<Role> roles) {
+	public User( String userName, String email, String phone, Set<Role> roles) {
 		super();
-		this.firstName = firstName;
-		this.lastName = lastName;
+		this.userName = userName;
 		this.email = email;
 		this.phone = phone;
 		this.roles = roles;
@@ -107,21 +109,17 @@ public class User {
 	public Long getId() {
 		return id;
 	}
-
-	public String getFirstName() {
-		return firstName;
+	
+	public String getUserName() {
+		return userName;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getEmail() {

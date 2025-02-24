@@ -1,5 +1,9 @@
 package com.personalAssist.DrukFarm.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,29 +13,32 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOException;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.personalAssist.DrukFarm.Model.BuyerDetail;
+import com.personalAssist.DrukFarm.Model.DP;
 import com.personalAssist.DrukFarm.Model.FarmerDetail;
 import com.personalAssist.DrukFarm.Model.OTP;
 import com.personalAssist.DrukFarm.Model.Produce;
-import com.personalAssist.DrukFarm.Model.Product;
 import com.personalAssist.DrukFarm.Model.Role;
 import com.personalAssist.DrukFarm.Model.TransporterDetail;
 import com.personalAssist.DrukFarm.Model.User;
 import com.personalAssist.DrukFarm.Model.UserServiceModal;
-import com.personalAssist.DrukFarm.dto.BuyerDetailDTO;
-import com.personalAssist.DrukFarm.dto.ServiceRequestDTO;
+import com.personalAssist.DrukFarm.dto.DetailsRequestDTO;
 import com.personalAssist.DrukFarm.dto.UserDTO;
 import com.personalAssist.DrukFarm.repository.BuyerDetailRepository;
+import com.personalAssist.DrukFarm.repository.DpRepository;
 import com.personalAssist.DrukFarm.repository.FarmerDetailRepository;
 import com.personalAssist.DrukFarm.repository.OtpRepository;
 import com.personalAssist.DrukFarm.repository.ProduceRepository;
-import com.personalAssist.DrukFarm.repository.ProductRepository;
 import com.personalAssist.DrukFarm.repository.RoleRepository;
 import com.personalAssist.DrukFarm.repository.TransporterDetailRepository;
 import com.personalAssist.DrukFarm.repository.UserRepository;
@@ -39,7 +46,9 @@ import com.personalAssist.DrukFarm.repository.UserServiceRepository;
 import com.personalAssist.DrukFarm.util.AppConstants;
 import com.personalAssist.DrukFarm.util.PasswordEncoder;
 import com.personalAssist.DrukFarm.util.RoleType;
-import com.personalAssist.DrukFarm.util.UserWrapper;
+import com.personalAssist.DrukFarm.wrapper.UserWrapper;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserServiceimpl implements UserService {
@@ -67,10 +76,13 @@ public class UserServiceimpl implements UserService {
 
 	@Autowired
 	OtpRepository otpRepository;
-	
+
+	@Autowired
+	DpRepository dpRepository;
+
 //	@Autowired
 //	JavaMailSender mailSender;
-	
+
 	@Override
 	public UserDTO addUser(UserDTO userDTO) {
 		User user = UserWrapper.toEntity(userDTO);
@@ -96,8 +108,7 @@ public class UserServiceimpl implements UserService {
 	@Override
 	public Optional<User> updateUser(Long id, UserDTO updateUser) {
 		return userRepository.findById(id).map((user) -> {
-			user.setFirstName(updateUser.getFirstName());
-			user.setLastName(updateUser.getLastName());
+			user.setUserName(updateUser.getUserName());
 			user.setEmail(updateUser.getEmail());
 			user.setPhone(updateUser.getPhone());
 			user.setLocation(updateUser.getLocation());
@@ -142,7 +153,7 @@ public class UserServiceimpl implements UserService {
 	}
 
 	@Override
-	public User addUserServiceOffered(ServiceRequestDTO serviceRequestDTO) {
+	public User addUserServiceOffered(DetailsRequestDTO serviceRequestDTO) {
 		User user = userRepository.findByEmail(serviceRequestDTO.getEmail());
 
 		for (String service : serviceRequestDTO.getServices()) {
@@ -158,8 +169,8 @@ public class UserServiceimpl implements UserService {
 	}
 
 	@Override
-	public List<String> fetchServicesForUser(ServiceRequestDTO serviceRequestDTO) {
-		User user = userRepository.findByEmail(serviceRequestDTO.getEmail());
+	public List<String> fetchServicesForUser(DetailsRequestDTO detailsRequestDTO) {
+		User user = userRepository.findByEmail(detailsRequestDTO.getEmail());
 
 		List<UserServiceModal> userServices = userServiceRepository.findServicesByUserId(user.getId());
 		List<String> serviceNames = new ArrayList<>();
@@ -172,48 +183,44 @@ public class UserServiceimpl implements UserService {
 	}
 
 	@Override
-	public BuyerDetail addBuyerDetail(ServiceRequestDTO serviceRequestDTO) {
-		User user = userRepository.findByEmail(serviceRequestDTO.getEmail());
+	public BuyerDetail addBuyerDetail(DetailsRequestDTO detailsRequestDTO) {
+		User user = userRepository.findByEmail(detailsRequestDTO.getEmail());
 
 		BuyerDetail buyerDetail = new BuyerDetail();
 		buyerDetail.setUser(user);
-		buyerDetail.setBusinessName(serviceRequestDTO.getBuyerDetailDTO().getBusinessName());
-		buyerDetail.setDeliveryPreference(serviceRequestDTO.getBuyerDetailDTO().getDeliveryPreference());
-		buyerDetail.setPreferredProduce(serviceRequestDTO.getBuyerDetailDTO().getPreferredProduce());
-		buyerDetail.setPurchaseHistory(serviceRequestDTO.getBuyerDetailDTO().getPurchaseHistory());
+		buyerDetail.setBusinessName(detailsRequestDTO.getBuyerDetailDTO().getBusinessName());
+		buyerDetail.setDeliveryPreference(detailsRequestDTO.getBuyerDetailDTO().getDeliveryPreference());
+		buyerDetail.setPreferredProduce(detailsRequestDTO.getBuyerDetailDTO().getPreferredProduce());
+		buyerDetail.setPurchaseHistory(detailsRequestDTO.getBuyerDetailDTO().getPurchaseHistory());
 
 		return buyerDetailRepository.save(buyerDetail);
 	}
 
 	@Override
-	public TransporterDetail addTransporterDetail(ServiceRequestDTO serviceRequestDTO) {
-		User user = userRepository.findByEmail(serviceRequestDTO.getEmail());
+	public TransporterDetail addTransporterDetail(DetailsRequestDTO detailsRequestDTO) {
+		User user = userRepository.findByEmail(detailsRequestDTO.getEmail());
 
 		TransporterDetail transporterDetail = new TransporterDetail();
 		transporterDetail.setUser(user);
-		transporterDetail.setVehicleCapacity(serviceRequestDTO.getTransporterDetail().getVehicleCapacity());
-		transporterDetail.setVehicleType(serviceRequestDTO.getTransporterDetail().getVehicleType());
+		transporterDetail.setVehicleCapacity(detailsRequestDTO.getTransporterDetail().getVehicleCapacity());
+		transporterDetail.setVehicleType(detailsRequestDTO.getTransporterDetail().getVehicleType());
 
 		return transporterRepository.save(transporterDetail);
 	}
 
 	@Override
-	public FarmerDetail addFarmerDetil(ServiceRequestDTO serviceRequestDTO) {
-		User user = userRepository.findByEmail(serviceRequestDTO.getEmail());
+	public FarmerDetail addFarmerDetil(DetailsRequestDTO detailsRequestDTO) {
+		User user = userRepository.findByEmail(detailsRequestDTO.getEmail());
 
 		FarmerDetail farmerDetail = new FarmerDetail();
-		farmerDetail.setFarmName(serviceRequestDTO.getFarmerDetail().getFarmName());
-		farmerDetail.setFarmSize(serviceRequestDTO.getFarmerDetail().getFarmSize());
-		farmerDetail.setHarvestSeason(serviceRequestDTO.getFarmerDetail().getHarvestSeason());
-		farmerDetail.setTransportRequired(serviceRequestDTO.getFarmerDetail().getTransportRequired());
+		farmerDetail.setFarmName(detailsRequestDTO.getFarmerDetail().getFarmName());
+		farmerDetail.setFarmSize(detailsRequestDTO.getFarmerDetail().getFarmSize());
+		farmerDetail.setHarvestSeason(detailsRequestDTO.getFarmerDetail().getHarvestSeason());
+		farmerDetail.setTransportRequired(detailsRequestDTO.getFarmerDetail().getTransportRequired());
 		farmerDetail.setUser(user);
-		farmerDetailRepository.save(farmerDetail);
 
-		List<Produce> availableProduce = new ArrayList<>();
-		for (String produceName : serviceRequestDTO.getProduceDTO().getProduceNames()) {
-			availableProduce.add(new Produce(produceName, farmerDetail));
-		}
-		produceRepository.saveAll(availableProduce);
+		farmerDetailRepository.save(farmerDetail);
+		
 		return farmerDetail;
 	}
 
@@ -243,6 +250,71 @@ public class UserServiceimpl implements UserService {
 //		message.setText("Your OTP is "+ otp +". It is vallid till 5 minutes");
 //		
 //		mailSender.send(message);
-		
+
+	}
+
+	@Override
+	@Transactional
+	public String uploadDP(String email, MultipartFile file) {
+		User user = userRepository.findByEmail(email);
+		String fileName = null;
+
+		Path uploadPath = Paths.get(AppConstants.UPLOAD_DIR);
+		if (!Files.exists(uploadPath)) {
+			try {
+				Files.createDirectories(uploadPath);
+
+			} catch (IOException e) {
+				return " Could not create directory";
+			}
+		} else {
+			fileName = UUID.randomUUID().toString() + file.getOriginalFilename().replace(" ", "");
+			Path filePath = uploadPath.resolve(fileName);
+
+			try {
+				DP dpEntity = new DP();
+				dpEntity.setUser(user);
+				dpEntity.setFilePath(filePath.toString());
+				dpEntity.setFileName(fileName);
+
+				dpRepository.save(dpEntity);
+				Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+				return "File upload failed";
+			}
+		}
+
+		return fileName;
+	}
+
+	@Override
+	public String getDP(String email) {
+		User user = userRepository.findByEmail(email);
+
+		return dpRepository.fetchFileName(user.getId());
+	}
+
+	@Transactional
+	@Override
+	public String updateDP(String email, MultipartFile file) {
+		User user = userRepository.findByEmail(email);
+
+		Path updatePath = Paths.get(AppConstants.UPLOAD_DIR);
+
+		String fileName = UUID.randomUUID().toString() + file.getOriginalFilename().replace(" ", "");
+		Path filePath = updatePath.resolve(fileName);
+
+		try {
+			dpRepository.updateDP(user.getId(), fileName, filePath.toString());
+			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "File upload failed";
+		}
+
+		return getDP(email);
 	}
 }
