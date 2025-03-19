@@ -1,8 +1,11 @@
 package com.personalAssist.DrukFarm.controller;
 
+import java.util.List;
+
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.personalAssist.DrukFarm.dto.BuyerDetailDTO;
 import com.personalAssist.DrukFarm.dto.FarmerDetailDTO;
+import com.personalAssist.DrukFarm.dto.ProduceDetailWithFarmerDetailDTO;
 import com.personalAssist.DrukFarm.dto.TransporterDetailDTO;
 import com.personalAssist.DrukFarm.service.DetailsService;
 
@@ -55,6 +59,13 @@ public class DetailsController {
 		} else {
 			return ResponseEntity.status(HttpStatus.SC_CONFLICT).body("Error adding transporter details");
 		}
+	}
+	
+	@GetMapping("/getProdDetalFarmerDetail/{prod_id}")
+	public ResponseEntity<ProduceDetailWithFarmerDetailDTO> getProduceDetailWithFarmerDetail(@PathVariable Long prod_id){
+		ProduceDetailWithFarmerDetailDTO detail = detailService.getProduceDetailWithFarmerDetail(prod_id);
+		
+		return ResponseEntity.ok(detail);
 	}
 	
 }

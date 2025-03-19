@@ -25,13 +25,31 @@ public class BuyerDetail {
 	private String preferredProduce;
 	private String purchaseHistory;
 	private String deliveryPreference;
-	
+	private String businessType;
+	private String businessLocation;
+
 	public BuyerDetail() {
 		super();
 	}
 
 	public Long getId() {
 		return id;
+	}
+
+	public String getBusinessType() {
+		return businessType;
+	}
+
+	public void setBusinessType(String businessType) {
+		this.businessType = businessType;
+	}
+
+	public String getBusinessLocation() {
+		return businessLocation;
+	}
+
+	public void setBusinessLocation(String businessLocation) {
+		this.businessLocation = businessLocation;
 	}
 
 	public void setId(Long id) {
@@ -77,6 +95,5 @@ public class BuyerDetail {
 	public void setDeliveryPreference(String deliveryPreference) {
 		this.deliveryPreference = deliveryPreference;
 	}
-	
-	
+
 }

@@ -2,6 +2,9 @@ package com.personalAssist.DrukFarm.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.personalAssist.DrukFarm.Model.AppImage;
 
 public class ProduceDTO {
 
@@ -18,13 +21,71 @@ public class ProduceDTO {
 	private String packagingType;
 	private String ripeNessLevel;
 	private boolean delivery;
+	private String error;
+//	private List<AppImage> images;
+	private List<String> imageName;
+	private List<String> url;
+	private Long userId;
+	private Long cartId;
+	private LocalDate createdAt;
+	private LocalDate updatedAt;
+	private String status;
+
+	public LocalDate getCreatedAt() {
+		return createdAt;
+	}
+
+	public LocalDate getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(LocalDate updatedAt) {
+		this.updatedAt = updatedAt;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public void setCreatedAt(LocalDate createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public List<String> getUrl() {
+		return url;
+	}
+
+	public Long getCartId() {
+		return cartId;
+	}
+
+	public void setCartId(Long cartId) {
+		this.cartId = cartId;
+	}
+
+	public void setUrl(List<String> url) {
+		this.url = url;
+	}
 
 	public ProduceDTO() {
 		super();
 	}
 
-	public ProduceDTO(Long id, String name, float pricePerUnit, int quantityAvailable, String animalSource,String cultivationMethod, LocalDate harvestDate,
-			 String storageAndShelfLife, String category) {
+	public List<String> getImageName() {
+		return imageName;
+	}
+
+	public void setImageName(List<String> imageName) {
+		this.imageName = imageName;
+	}
+
+	public ProduceDTO(Long id, String name, float pricePerUnit, int quantityAvailable, String animalSource,
+			String cultivationMethod, LocalDate harvestDate, String storageAndShelfLife, String category,
+			LocalDate createdAt, String status) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -35,6 +96,8 @@ public class ProduceDTO {
 		this.storageAndShelfLife = storageAndShelfLife;
 		this.animalSource = animalSource;
 		this.category = category;
+		this.createdAt = createdAt;
+		this.status = status;
 	}
 
 	public Long getId() {
@@ -47,6 +110,14 @@ public class ProduceDTO {
 
 	public String getCategory() {
 		return category;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getName() {
@@ -139,6 +210,14 @@ public class ProduceDTO {
 
 	public void setDelivery(boolean delivery) {
 		this.delivery = delivery;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
 	}
 
 }

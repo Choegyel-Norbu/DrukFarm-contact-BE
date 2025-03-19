@@ -12,5 +12,5 @@ public interface FarmerDetailRepository extends JpaRepository<FarmerDetail, Long
 	
 	@Query("SELECT f FROM FarmerDetail f where user.id= :id")
 	FarmerDetail fetchFarmerDetailByUserID(Long id);
-
+	
 }

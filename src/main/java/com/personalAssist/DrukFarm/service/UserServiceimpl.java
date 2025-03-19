@@ -23,7 +23,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.personalAssist.DrukFarm.Model.AppImage;
 import com.personalAssist.DrukFarm.Model.BuyerDetail;
+import com.personalAssist.DrukFarm.Model.Cart;
+import com.personalAssist.DrukFarm.Model.CartItem;
 import com.personalAssist.DrukFarm.Model.DP;
 import com.personalAssist.DrukFarm.Model.FarmerDetail;
 import com.personalAssist.DrukFarm.Model.OTP;
@@ -32,9 +35,13 @@ import com.personalAssist.DrukFarm.Model.Role;
 import com.personalAssist.DrukFarm.Model.TransporterDetail;
 import com.personalAssist.DrukFarm.Model.User;
 import com.personalAssist.DrukFarm.Model.UserServiceModal;
+import com.personalAssist.DrukFarm.dto.CartItemDTO;
 import com.personalAssist.DrukFarm.dto.DetailsRequestDTO;
+import com.personalAssist.DrukFarm.dto.ProduceDTO;
 import com.personalAssist.DrukFarm.dto.UserDTO;
 import com.personalAssist.DrukFarm.repository.BuyerDetailRepository;
+import com.personalAssist.DrukFarm.repository.CartItemRepository;
+import com.personalAssist.DrukFarm.repository.CartRepository;
 import com.personalAssist.DrukFarm.repository.DpRepository;
 import com.personalAssist.DrukFarm.repository.FarmerDetailRepository;
 import com.personalAssist.DrukFarm.repository.OtpRepository;
@@ -48,6 +55,7 @@ import com.personalAssist.DrukFarm.util.PasswordEncoder;
 import com.personalAssist.DrukFarm.util.RoleType;
 import com.personalAssist.DrukFarm.wrapper.UserWrapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -79,6 +87,12 @@ public class UserServiceimpl implements UserService {
 
 	@Autowired
 	DpRepository dpRepository;
+	
+	@Autowired
+	CartRepository cartRepository;
+	
+	@Autowired
+	CartItemRepository cartItemRepository;
 
 //	@Autowired
 //	JavaMailSender mailSender;
@@ -134,21 +148,20 @@ public class UserServiceimpl implements UserService {
 	}
 
 	@Override
-	public UserDTO addRole(String email, List<String> roleNames) {
-		User user = userRepository.findByEmail(email);
-
-		Set<Role> userRoles = roleNames.stream().map(roleName -> {
+	public UserDTO addRole(Long userId, Set<String> roleNames) {
+		User user = userRepository.findById(userId).orElse(null);
+		Set<Role> userRoles = new HashSet<>();
+		
+		for(String roleName : roleNames) {
 			RoleType roleType;
-			try {
-				roleType = RoleType.valueOf(roleName.toUpperCase());
-			} catch (IllegalArgumentException e) {
-				throw new RuntimeException("Invalid role: " + roleName);
-			}
-			return roleRepository.findByName(roleType)
-					.orElseThrow(() -> new RuntimeException("Role not found: " + roleType));
-		}).collect(Collectors.toSet());
+			roleType = RoleType.valueOf(roleName.toUpperCase());
+			
+			Role role = roleRepository.findByName(roleType)
+		            .orElseThrow(() -> new RuntimeException("Role not found: " + roleType));
+			userRoles.add(role);
+			user.setRoles(userRoles);		
+		}
 
-		user.setRoles(userRoles);
 		return UserWrapper.toDTO(userRepository.save(user));
 	}
 
@@ -316,5 +329,81 @@ public class UserServiceimpl implements UserService {
 		}
 
 		return getDP(email);
+	}
+
+	@Override
+	public List<Role> fetchRoles(Long id) {
+		return roleRepository.findRolesByUserId(id);
+	}
+
+	@Override
+	public void deleteDP(Long id) {
+		dpRepository.deleteDP(id);
+	}
+
+	@Override
+	public void removeRole(Long userId) {
+		roleRepository.removeRole(userId);
+	}
+
+	@Override
+	public Cart addToCart(Long userId, Long produceId, int quantity) {
+		User user = userRepository.findById(userId).orElse(null);
+		Produce produce = produceRepository.findById(produceId).orElse(null);
+		
+        Cart cart = cartRepository.findByUser(user);
+        if(cart == null) {
+        	cart = new Cart(user);
+        	cartRepository.save(cart);
+        }
+        
+        CartItem cartItem = new CartItem(cart, produce, quantity);
+        cartItemRepository.save(cartItem);
+
+		return cart;
+	}
+
+	@Override
+	public int getCartCount(Long userId) {
+		return cartItemRepository.getCartCount(userId);
+	}
+
+//	List<Produce> produces = produceRepository.fetchProduceByFarmerId(userId);
+//	List<ProduceDTO> dto = new ArrayList<>();
+//	for(Produce produce : produces) {
+//		List<String> imageURL = new ArrayList<>();
+//		List<AppImage> image = produce.getImages();
+//		for(AppImage img : image) {
+//			String url = request.getRequestURL().toString().replace(request.getRequestURI(), "") + "/images/"
+//					+ img.getFileName();
+//			imageURL.add(url);
+//		}
+//		ProduceDTO produceDTO = UserWrapper.toProduceDTO(produce);
+//		produceDTO.setUrl(imageURL);
+//		dto.add(produceDTO);
+//	}
+	
+	@Override
+	public List<ProduceDTO> getCartItems(Long userId, HttpServletRequest request) {
+		List<CartItemDTO> cartItems = cartItemRepository.getCartItem(userId);
+		List<ProduceDTO> dto = new ArrayList<>();
+		
+		if(cartItems.isEmpty()) {
+			return null;
+		}
+		for(CartItemDTO items : cartItems) {
+			List<String> imageUrl = new ArrayList<>();
+			List<AppImage> image = items.getProduce().getImages();
+			for(AppImage img : image) {
+				String url = request.getRequestURL().toString().replace(request.getRequestURI(), "") + "/images/"
+						+ img.getFileName();
+				imageUrl.add(url);
+			}
+			ProduceDTO produceDTO = UserWrapper.toProduceDTO(items.getProduce());
+			produceDTO.setUrl(imageUrl);
+			produceDTO.setCartId(items.getCartItemId());
+			dto.add(produceDTO);
+		}
+		return dto;
 	}
 }

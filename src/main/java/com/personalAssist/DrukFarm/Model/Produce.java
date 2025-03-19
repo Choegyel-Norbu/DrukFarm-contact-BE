@@ -4,6 +4,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.personalAssist.DrukFarm.enums.ProductCategoryEnum;
 import com.personalAssist.DrukFarm.util.RoleType;
 
@@ -42,16 +45,55 @@ public class Produce {
 	private String packagingType;
 	private String ripeNessLevel;
 	private boolean delivery;
+	private String status;
+	
+	@CreationTimestamp
+	private LocalDate createAt;
+	
+	@UpdateTimestamp
+	private LocalDate updateAt;
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public LocalDate getUpdateAt() {
+		return updateAt;
+	}
+
+	public void setUpdateAt(LocalDate updateAt) {
+		this.updateAt = updateAt;
+	}
 
 	@ManyToOne
 	@JoinColumn(name = "farmer_id", nullable = false)
 	private FarmerDetail farmerDetail;
+
+	public LocalDate getCreateAt() {
+		return createAt;
+	}
+
+	public void setCreateAt(LocalDate createAt) {
+		this.createAt = createAt;
+	}
 
 	@OneToMany(mappedBy = "produce", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<AppImage> images;
 
 	public Produce() {
 		super();
+	}
+
+	public List<AppImage> getImages() {
+		return images;
+	}
+
+	public void setImages(List<AppImage> images) {
+		this.images = images;
 	}
 
 	public Produce(String name, FarmerDetail farmerDetail) {

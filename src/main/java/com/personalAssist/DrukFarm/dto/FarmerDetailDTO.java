@@ -5,6 +5,7 @@ public class FarmerDetailDTO {
 	private String farmSize;
 	private String harvestSeason;
 	private Boolean transportRequired;
+	private String farmLocation;
 
 	public FarmerDetailDTO() {
 		super();
@@ -32,6 +33,14 @@ public class FarmerDetailDTO {
 
 	public void setHarvestSeason(String harvestSeason) {
 		this.harvestSeason = harvestSeason;
+	}
+
+	public String getFarmLocation() {
+		return farmLocation;
+	}
+
+	public void setFarmLocation(String farmLocation) {
+		this.farmLocation = farmLocation;
 	}
 
 	public Boolean getTransportRequired() {

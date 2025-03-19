@@ -8,6 +8,7 @@ import com.personalAssist.DrukFarm.Model.Produce;
 import com.personalAssist.DrukFarm.dto.BuyerDetailDTO;
 import com.personalAssist.DrukFarm.dto.FarmerDetailDTO;
 import com.personalAssist.DrukFarm.dto.ProduceDTO;
+import com.personalAssist.DrukFarm.dto.ProduceDetailWithFarmerDetailDTO;
 import com.personalAssist.DrukFarm.dto.TransporterDetailDTO;
 
 @Component
@@ -18,6 +19,7 @@ public interface DetailsService {
 	
 	public String addBuyerDetails(String email, BuyerDetailDTO farmerDetailDTO);
 	public String updateBuyerDetials(Long userId, BuyerDetailDTO farmerDetailDTO);
+	public ProduceDetailWithFarmerDetailDTO getProduceDetailWithFarmerDetail(Long id);
 	
 	public String addTransporterDetails(String email, TransporterDetailDTO farmerDetailDTO);
 	public String updateTransporterDetials(Long userId, TransporterDetailDTO farmerDetailDTO);

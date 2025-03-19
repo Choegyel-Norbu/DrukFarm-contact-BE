@@ -1,5 +1,7 @@
 package com.personalAssist.DrukFarm.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,9 +11,11 @@ import com.personalAssist.DrukFarm.Model.TransporterDetail;
 import com.personalAssist.DrukFarm.Model.User;
 import com.personalAssist.DrukFarm.dto.BuyerDetailDTO;
 import com.personalAssist.DrukFarm.dto.FarmerDetailDTO;
+import com.personalAssist.DrukFarm.dto.ProduceDetailWithFarmerDetailDTO;
 import com.personalAssist.DrukFarm.dto.TransporterDetailDTO;
 import com.personalAssist.DrukFarm.repository.BuyerDetailRepository;
 import com.personalAssist.DrukFarm.repository.FarmerDetailRepository;
+import com.personalAssist.DrukFarm.repository.ProduceRepository;
 import com.personalAssist.DrukFarm.repository.TransporterDetailRepository;
 import com.personalAssist.DrukFarm.repository.UserRepository;
 
@@ -29,6 +33,9 @@ public class DetailsServiceImpl implements DetailsService{
 	
 	@Autowired
 	UserRepository userRepository;
+	
+	@Autowired
+	ProduceRepository produceRepository;
 
 	@Override
 	public String addFarmerDetails(String email, FarmerDetailDTO farmerDetailDTO) {
@@ -37,7 +44,7 @@ public class DetailsServiceImpl implements DetailsService{
 		
 		try {
 			farmerDetail.setFarmName(farmerDetailDTO.getFarmName());
-			farmerDetail.setFarmLocation(farmerDetailDTO.getFarmName());
+			farmerDetail.setFarmLocation(farmerDetailDTO.getFarmLocation());
 			farmerDetail.setFarmSize(farmerDetailDTO.getFarmSize());
 			farmerDetail.setUser(user);
 			
@@ -57,15 +64,17 @@ public class DetailsServiceImpl implements DetailsService{
 	}
 
 	@Override
-	public String addBuyerDetails(String email, BuyerDetailDTO farmerDetailDTO) {
+	public String addBuyerDetails(String email, BuyerDetailDTO buyerDetailDTO) {
 		User user = userRepository.findByEmail(email);
 		
 		try {
 			BuyerDetail buyerDetail = new BuyerDetail();
-			buyerDetail.setBusinessName(farmerDetailDTO.getBusinessName());
-			buyerDetail.setDeliveryPreference(farmerDetailDTO.getDeliveryPreference());
-			buyerDetail.setPreferredProduce(farmerDetailDTO.getPreferredProduce());
-			buyerDetail.setPurchaseHistory(farmerDetailDTO.getPurchaseHistory());
+			buyerDetail.setBusinessName(buyerDetailDTO.getBusinessName());
+			buyerDetail.setDeliveryPreference(buyerDetailDTO.getDeliveryPreference());
+			buyerDetail.setPreferredProduce(buyerDetailDTO.getPreferredProduce());
+			buyerDetail.setPurchaseHistory(buyerDetailDTO.getPurchaseHistory());
+			buyerDetail.setBusinessLocation(buyerDetailDTO.getBusinessLocation());
+			buyerDetail.setBusinessType(buyerDetailDTO.getBusinessType());
 			buyerDetail.setUser(user);
 			
 			buyerDetailRepository.save(buyerDetail);
@@ -94,16 +103,21 @@ public class DetailsServiceImpl implements DetailsService{
 			
 			transporterDetailRepository.save(trasporterDetail);
 		}catch(Exception e) {
-			return "failed";
+			return "Failed";
 		}
 		
-		return "success";
+		return "Success";
 	}
 
 	@Override
 	public String updateTransporterDetials(Long userId, TransporterDetailDTO farmerDetailDTO) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public ProduceDetailWithFarmerDetailDTO getProduceDetailWithFarmerDetail(Long prod_id) {
+		return produceRepository.getProductFarmerDetail(prod_id);
 	}
 
 }

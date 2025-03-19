@@ -17,7 +17,8 @@ public class UserDTO {
 	private String location;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
-	private List<String> roles;
+	private Set<String> requestRole;
+	private Set<Role> responseRole;
 	private List<String> userServices = new ArrayList<>();
 
 	public UserDTO() {
@@ -45,13 +46,6 @@ public class UserDTO {
 		this.phone = phone;
 	}
 
-	public List<String> getRoles() {
-		return roles;
-	}
-
-	public void setRoles(List<String> roles) {
-		this.roles = roles;
-	}
 
 	public void setPassword(String password) {
 		this.password = password;
@@ -120,5 +114,23 @@ public class UserDTO {
 	public void setUpdatedAt(LocalDateTime updatedAt) {
 		this.updatedAt = updatedAt;
 	}
+
+	public Set<String> getRequestRole() {
+		return requestRole;
+	}
+
+	public void setRequestRole(Set<String> requestRole) {
+		this.requestRole = requestRole;
+	}
+
+	public Set<Role> getResponseRole() {
+		return responseRole;
+	}
+
+	public void setResponseRole(Set<Role> responseRole) {
+		this.responseRole = responseRole;
+	}
+	
+	
 
 }

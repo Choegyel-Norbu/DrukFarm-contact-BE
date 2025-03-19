@@ -20,16 +20,24 @@ public class UserWrapper {
 	}
 
 	public static UserDTO toDTO(User user) {
-		return new UserDTO(user.getId(), user.getUserName(), user.getEmail(), user.getPhone(), user.getRoles());
+		UserDTO userDTO = new UserDTO();
+		userDTO.setId(user.getId());
+		userDTO.setEmail(user.getEmail());
+		userDTO.setUserName(user.getUserName());
+		userDTO.setResponseRole(user.getRoles());
+
+		return userDTO;
 	}
 
 	public static ProduceDTO toProduceDTO(Produce produce) {
-		return new ProduceDTO(produce.getId(), produce.getName(), produce.getPricePerUnit(), produce.getQuantityAvailable(), produce.getAnimalSource(),
-				produce.getCultivationMethod(), produce.getHarvestDate(), produce.getStorageAndShelfLife(), produce.getCategory());
+		return new ProduceDTO(produce.getId(), produce.getName(), produce.getPricePerUnit(),
+				produce.getQuantityAvailable(), produce.getAnimalSource(), produce.getCultivationMethod(),
+				produce.getHarvestDate(), produce.getStorageAndShelfLife(), produce.getCategory(),
+				produce.getCreateAt(), produce.getStatus());
 	}
-	
+
 	public static AppImageDTO toAppImageDTO(AppImage appImage) {
-		return new AppImageDTO(appImage.getId());
+		return new AppImageDTO(appImage.getId(), appImage.getProduce());
 	}
 
 }

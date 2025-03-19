@@ -1,5 +1,6 @@
 package com.personalAssist.DrukFarm.service;
 
+import java.awt.print.Pageable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,12 +21,14 @@ import com.personalAssist.DrukFarm.Model.AppImage;
 import com.personalAssist.DrukFarm.Model.FarmerDetail;
 import com.personalAssist.DrukFarm.Model.Produce;
 import com.personalAssist.DrukFarm.dto.ProduceDTO;
+import com.personalAssist.DrukFarm.dto.ProducePaginatedDTO;
 import com.personalAssist.DrukFarm.repository.AppImageRepository;
 import com.personalAssist.DrukFarm.repository.FarmerDetailRepository;
 import com.personalAssist.DrukFarm.repository.ProduceRepository;
 import com.personalAssist.DrukFarm.util.AppConstants;
 import com.personalAssist.DrukFarm.wrapper.UserWrapper;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -56,6 +62,7 @@ public class ProduceServiceImpl implements ProduceService {
 			produce.setRipeNessLevel(produceDTO.getRipeNessLevel());
 			produce.setStorageAndShelfLife(produceDTO.getStorageAndShelfLife());
 			produce.setDelivery(produceDTO.isDelivery());
+			produce.setStatus(produceDTO.getStatus());
 
 			produceRepository.save(produce);
 
@@ -86,15 +93,24 @@ public class ProduceServiceImpl implements ProduceService {
 	}
 
 	@Override
-	public String updateProduceById(Long id, ProduceDTO produceDTO) {
-		// TODO Auto-generated method stub
-		return null;
+	public String updateProduceById(Long id, ProduceDTO updateProduce) {
+		Produce produce = produceRepository.findById(id).orElse(null);
+		if(produce != null) {
+			produce.setName(updateProduce.getName());
+			produce.setPricePerUnit(updateProduce.getPricePerUnit());
+			produce.setQuantityAvailable(updateProduce.getQuantityAvailable());
+			produce.setStorageAndShelfLife(updateProduce.getStorageAndShelfLife());
+			produce.setStatus(updateProduce.getStatus());
+		}
+		if(produceRepository.save(produce) != null) {
+			return "Success";
+		}
+		return "Failed";
 	}
 
 	@Override
-	public String deleteProduceById(Long id) {
-		// TODO Auto-generated method stub
-		return null;
+	public void deleteProduceById(Long id) {
+		produceRepository.deleteById(id);
 	}
 
 	@Override
@@ -112,7 +128,7 @@ public class ProduceServiceImpl implements ProduceService {
 	@Transactional
 	@Override
 	public String uploadImage(Long productId, MultipartFile file) {
-		Produce produce = produceRepository.getById(productId);
+		Produce produce = produceRepository.findById(productId).orElse(null);
 		Path imagePath = Paths.get(AppConstants.IMAGE_UPLOAD_DIR);
 		String fileName = null;
 
@@ -145,7 +161,7 @@ public class ProduceServiceImpl implements ProduceService {
 	@Override
 	public List<String> uploadMulImages(Long produceId, List<MultipartFile> files) {
 		Produce produce = produceRepository.getById(produceId);
-		
+
 		Path imagePath = Paths.get(AppConstants.IMAGE_UPLOAD_DIR);
 		List<String> multiFileName = new ArrayList<>();
 
@@ -157,7 +173,7 @@ public class ProduceServiceImpl implements ProduceService {
 				return null;
 			}
 		} else {
-			for(MultipartFile images : files) {
+			for (MultipartFile images : files) {
 				String fileName = UUID.randomUUID().toString() + images.getOriginalFilename().replace(" ", "");
 				Path filePath = imagePath.resolve(fileName);
 
@@ -174,7 +190,7 @@ public class ProduceServiceImpl implements ProduceService {
 				}
 				multiFileName.add(fileName);
 			}
-			
+
 		}
 		return multiFileName;
 	}
@@ -189,4 +205,76 @@ public class ProduceServiceImpl implements ProduceService {
 		appImageRepository.deleteById(imageId);
 	}
 
+	@Override
+	public Page<ProduceDTO> getPaginatedProduce(int page, int size, HttpServletRequest request) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+		Page<ProducePaginatedDTO> produces = produceRepository.fetchPaginatedProduce(pageRequest);
+
+		return produces.map(produce -> {
+			ProduceDTO dto = UserWrapper.toProduceDTO(produce.getProduce());
+			List<String> imageName = new ArrayList<>();
+			List<String> imgURL = new ArrayList<>();
+			List<AppImage> names = produce.getProduce().getImages();
+			for (AppImage img : names) {
+				String url = request.getRequestURL().toString().replace(request.getRequestURI(), "") + "/images/"
+						+ img.getFileName();
+				imageName.add(img.getFileName());
+				imgURL.add(url);
+			}
+			dto.setUrl(imgURL);
+			dto.setUserId(produce.getUserId());
+			return dto;
+		});
+	}
+
+	@Override
+	public Page<ProduceDTO> searchProduceWithName(String keyword, int page, int size, HttpServletRequest request) {
+		PageRequest pageRequest = PageRequest.of(page, size);
+
+		Page<ProducePaginatedDTO> produces = produceRepository.searchWithName(keyword, pageRequest);
+
+		return produces.map(produce -> {
+			ProduceDTO dto = UserWrapper.toProduceDTO(produce.getProduce());
+			List<String> imageName = new ArrayList<>();
+			List<String> imgURL = new ArrayList<>();
+			List<AppImage> image = produce.getProduce().getImages();
+			for (AppImage img : image) {
+				String url = request.getRequestURL().toString().replace(request.getRequestURI(), "") + "/images/"
+						+ img.getFileName();
+				imgURL.add(url);
+			}
+			dto.setUrl(imgURL);
+
+			return dto;
+		});
+	}
+
+	@Override
+	public List<String> fetchOnlyImageName(Long id) {
+		return appImageRepository.fetchOnlyImageName(id);
+	}
+
+	@Override
+	public List<ProduceDTO> fetchProduceByFarmerId(Long userId, HttpServletRequest request) {
+		List<Produce> produces = produceRepository.fetchProduceByFarmerId(userId);
+		List<ProduceDTO> dto = new ArrayList<>();
+		for(Produce produce : produces) {
+			List<String> imageURL = new ArrayList<>();
+			List<AppImage> image = produce.getImages();
+			for(AppImage img : image) {
+				String url = request.getRequestURL().toString().replace(request.getRequestURI(), "") + "/images/"
+						+ img.getFileName();
+				imageURL.add(url);
+			}
+			ProduceDTO produceDTO = UserWrapper.toProduceDTO(produce);
+			produceDTO.setUrl(imageURL);
+			dto.add(produceDTO);
+		}
+		return dto;
+	}
+
+	@Override
+	public int getProduceByFarmerCount(Long userId) {
+		return produceRepository.getProduceByFarmerCount(userId);
+	}
 }

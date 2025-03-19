@@ -2,6 +2,13 @@ package com.personalAssist.DrukFarm.dto;
 
 import com.personalAssist.DrukFarm.Model.Produce;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AppImageDTO {
 
 	private Long id;
@@ -14,9 +21,10 @@ public class AppImageDTO {
 		super();
 	}
 
-	public AppImageDTO(Long id) {
+	public AppImageDTO(Long id, Produce produce) {
 		super();
 		this.id = id;
+		this.produce = produce;
 	}
 
 	public Long getId() {
